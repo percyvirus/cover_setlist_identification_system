@@ -33,7 +33,7 @@ file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/Da-TACOS/da-tacos_b
 P_86643_data = dd.io.load(file_path)
 
 # Features extracted manually
-file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/COVERS80_3_extended/W_isOriginal_not_found/P_25506.h5'
+file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/PRUEBAS_RES1_extended/W_2111/P_2110.h5'
 propio_1 = dd.io.load(file_path)
 #print(type(propio_1))
 print(propio_1['audio_features']['audio_file'])

@@ -30,6 +30,7 @@ collection = "Covers80_HPCP"
 
 class Controller:
     def __init__(self):
+        self.running = True
         self.ui = UI(self)
         self.algorithm = None
         self.datasets = {}
@@ -53,7 +54,7 @@ class Controller:
 
 
     def run(self):
-        while True:
+        while self.running:
             try:
                 self.ui.display_menu()
                 self.ui.handle_user_input()
@@ -105,6 +106,9 @@ class Controller:
     def save_all_datasets(self, save_locally=True, save_to_mongodb=False):
         for dataset in self.datasets.items():
             self.datasetSaver.save_dataset(dataset, save_locally, save_to_mongodb)
+    
+    def exit_program(self):
+        self.running = False
         
 
     
