@@ -13,6 +13,8 @@ from domain_model.datasetSaver import DatasetSaver
 from domain_model.exiter import Exiter
 from domain_model.statisticalExtractor import StatisticalExtractor
 from domain_model.database import Database
+from algorithms.qmax import Qmax
+from algorithms.qmax_bis import Qmax_bis
 # from UI_module.creator import Creator
 # from UI_module.loader_audio import Loader_audio
 # from UI_module.uploader_hpcp import Uploader_hpcp
@@ -31,16 +33,17 @@ collection = "Covers80_HPCP"
 class Controller:
     def __init__(self):
         self.running = True
-        self.ui = UI(self)
-        self.algorithm = None
         self.datasets = {}
+        self.ui = UI(self, self.datasets)
+        self.algorithm = None
         self.featureExtractor = None
         self.datasetCreator = None
-        # self.datasetLoader = DatasetLoader()
+        self.datasetLoader = DatasetLoader(self)
         self.datasetSaver = DatasetSaver(self)
         # self.exiter = Exiter(self.ui)
         # self.statisticalExtractor = StatisticalExtractor()
         self.secondHandSongAPI = SecondHandSongsAPI()
+        self.statistical_extractor = StatisticalExtractor()
         
         # Read configuration from JSON file
         with open('config.json') as f:
@@ -94,16 +97,26 @@ class Controller:
         print("\nAvailable datasets:")
         for i, dataset_name in enumerate(self.datasets.keys(), 1):
             print(f"{i}. {dataset_name}")
-        
         print()
-        print("Press enter to continue...")
-        input()  # Wait for the user to press Enter
 
+    def load_datasets(self, file_path): #DONE
+        self.datasetLoader.load_dataset_locally(file_path, save_locally=True, save_to_mongodb=False)
     
-    def save_datasets(self):
-        self.datasetSaver.save_dataset("dataset_name", save_locally=True, save_to_mongodb=False)
+    def save_datasets(self):    # TODO: IMPLEMENT
+        self.datasetSaver.save_dataset("dataset_name", load_locally=True, load_from_mongodb=False)
+        
+    def execute_qmax(self, dataset, otiBinary, results_path):    # TODO: IMPLEMENT
+        self.algorithm = Qmax()
+        self.algorithm.execute_qmax(dataset, otiBinary, results_path)
+        
+    def execute_qmax_bis(self, dataset, otiBinary, results_path):    # TODO: IMPLEMENT
+        self.algorithm = Qmax_bis()
+        self.algorithm.execute_qmax_bis(dataset, otiBinary, results_path)
+        
+    def get_statistics(self, confusion_matrix_path):    # TODO: IMPLEMENT
+        self.statistical_extractor.calculate_metrics(confusion_matrix_path)
     
-    def save_all_datasets(self, save_locally=True, save_to_mongodb=False):
+    def save_all_datasets(self, save_locally=True, save_to_mongodb=False):  #DONE
         for dataset in self.datasets.items():
             self.datasetSaver.save_dataset(dataset, save_locally, save_to_mongodb)
     

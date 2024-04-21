@@ -26,12 +26,13 @@ class DatasetCreator():
         # Read the list of original songs
         with open(list_original_songs, 'r') as original_songs_file:
             original_songs = original_songs_file.read().splitlines()
-        
+            
         # Get base path of list_original_songs_path and list_cover_songs_path (in this case is the same)
         base_path = "/".join(list_original_songs.split("/")[:-1])
         
         if isinstance(self.feature_extractor, HPCPExtractor):
             for original_song in original_songs:
+                print(f"\nOriginal song: {original_song}")
                 # Get original_song path
                 original_song_path = f"{base_path}/{original_song}.mp3"
                 
@@ -87,7 +88,7 @@ class DatasetCreator():
                 files = os.listdir(original_song_folder_path)
                 for cover in files:
                     if cover != f"{original_song.split('/')[1]}.mp3":
-                        print(cover)
+                        print(f"Cover song: {cover}")
                         # Get cover_song path
                         cover_song_path = original_song_folder_path+cover
                         hpcp_12_bins, hpcp_36_bins, extraction_time_12_bins, extraction_time_36_bins, sample_rate, frame_size, hop_size, min_frequency, max_frequency, number_channels, md5, bit_rate, codec = self.feature_extractor.extract_HPCPs(cover_song_path, resample_quality=0)
@@ -161,12 +162,6 @@ class DatasetCreator():
     def get_song_info(self, song_path):
         # Extract information from the query song file name
         file_name_parts = song_path.split('+')
-        
-        '''file_name = file_name_parts[-1]
-        split_name = file_name.split('-')
-        song_name = split_name[1].split('.')[0]
-        song_name = song_name.replace('_s', "'s")
-        song_name = song_name.replace('_', ' ').title()'''
         
         artist_name = file_name_parts[0].split('/')[-1].replace('_', ' ').title()
         song_name = file_name_parts[2].split('-')[1].split('.')[0].replace('_s_', "'s_").replace('Don_t', "Don't").replace('Can_t', "Can't").replace('_', ' ').title()

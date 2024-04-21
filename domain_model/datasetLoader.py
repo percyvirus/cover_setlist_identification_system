@@ -1,41 +1,33 @@
-import sys 
 import os
-
-sys.path.append(os.getcwd())
-from domain_model import *
+import deepdish as dd
+from domain_model.dataset import Dataset
 
 class DatasetLoader:
-
-    #NOTA: La classe i sus funciones se encuentran implementadas en ISpreadsheetControllerForChecker
-    # El codigo posterior está duplicado. Ver ISpreadsheetControllerForChecker
-
-    def __init__(self):
-        pass
+    def __init__(self, controller):
+        self.controller = controller
+        self.dataset = Dataset()    #TODO: ¿Cómo hago para utilizar Dataset() directamente de controller? o simplemente cambiar "datasets" por "database"
         
-    def load_spreadsheet_from_s2v_file(self, file_path):
-        spreadsheet = ISpreadsheetControllerForChecker()
-        formulas = {}  # To store formulas and process them later
-        
+    def load_dataset_locally(self, folder_path, save_locally=True, save_to_mongodb=True):
+        #spreadsheet = ISpreadsheetControllerForChecker()
+        folder_name = os.path.basename(folder_path)
         try:
-            with open(file_path, "r") as s2v_file:
-                for row_num, line in enumerate(s2v_file):
-                    cells = line.strip().split(";")
-                    for col_num, cell_content in enumerate(cells):
-                        coord = chr(col_num + ord('A')) + str(row_num + 1)
-                        if cell_content:
-                            if cell_content.startswith("="):
-                                cell_content = cell_content.replace(",", ";")
-                                # If the cell_content is a formula, store it for later processing
-                                formulas[coord] = cell_content
-                            else:
-                                spreadsheet.set_cell_content(coord, cell_content)
+            all_items = os.listdir(folder_path)
+            subfolders = [item for item in all_items if item.startswith('W_') and os.path.isdir(os.path.join(folder_path, item))]
+            for subfolder in subfolders:
+                original_song_folder = os.path.join(folder_path, subfolder)
+                for _, _, song_files in os.walk(original_song_folder):
+                    song_files = [item for item in song_files if item.endswith('.h5')] # To avoid '.DS_Store'
+                    for song_file in song_files:
+                        song_data = dd.io.load(os.path.join(original_song_folder, song_file))
+                        self.dataset.add_data(song_data["track_id"], song_data)
+            self.controller.datasets[folder_name] = self.dataset
+            print(f"\nDataset {folder_name} loaded")
+        except FileNotFoundError:
+            print("File not found. Please check the file path.")
+        except IOError:
+            print("Error opening the file.")
         except Exception as e:
-            self.ui.display_error(f"Error loading spreadsheet from S2V file: {str(e)}")
+            self.ui.display_error(f"Error loading dataset from h5 file: {str(e)}")
             return None
-        
-        # Process the formulas after adding all other cells
-        for coord, formula_content in formulas.items():
-            spreadsheet.set_cell_content(coord, formula_content)
-        
-        return spreadsheet
+    
 

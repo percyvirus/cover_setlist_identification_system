@@ -8,7 +8,7 @@ import numpy as np
 import deepdish as dd
 
 
-class Qmax:
+class Qmax_bis:
     def __init__(self):
         self.binarize_percentile = 0.095
         self.frame_stack_size = 9
@@ -18,12 +18,12 @@ class Qmax:
         self.oti = True
         self.otiBinary = None
         self.streaming = False
-        self.alignment_type = 'serra09'
+        self.alignment_type = 'chen17'
         self.dis_extension = 0.5
         self.dis_onset = 0.5
         self.distance_type = 'asymmetric'
 
-    def execute_qmax(self, dataset, otiBinary, results_path):
+    def execute_qmax_bis(self, dataset, otiBinary, results_path):
         self.otiBinary = otiBinary  # Set Qmax or Qmax*
         confusion_matrix = {}
         confusion_matrix_12_bins = {}
@@ -56,7 +56,7 @@ class Qmax:
                     confusion_matrix[key] = {
                         "original_song_data": original_song_data_dataset,
                         "cover_song_data": cover_song_data_dataset,
-                        "cross_recurrence": cross_recurrence_plot,
+                        "cross_recurrence": cross_recurrence_plot.astype(np.bool_),
                         # "score_matrix": score_matrix,
                         "distance": distance,
                         "extraction_time_crp": extraction_time_crp,
@@ -79,6 +79,7 @@ class Qmax:
                                                                                                                       self.binarize_percentile, self.frame_stack_size,
                                                                                                                       self.frame_stackStride, self.noti_36_bins,
                                                                                                                       self.oti, self.otiBinary, self.streaming)"""
+                    
                     # Compute Cover Song Similarity Distance
                     _, distance_12_bins, extraction_time_css_12_bins = self.compute_cover_song_similarity_distance(self.dis_onset, self.dis_extension, self.alignment_type, self.distance_type, cross_recurrence_plot_12_bins)
                     # _, distance_36_bins, extraction_time_css_36_bins = self.compute_cover_song_similarity_distance(self.dis_onset, self.dis_extension, self.alignment_type, self.distance_type, cross_recurrence_plot_36_bins)
@@ -95,7 +96,7 @@ class Qmax:
                         "cover_song_hpcp_features": cover_song_data_dataset["hpcp_features"],
                         "cover_song_second_hand_song_API_features": cover_song_data_dataset["second_hand_song_API_features"],
                         "cover_track_id": cover_song_data_dataset["track_id"],
-                        "cross_recurrence_plot": cross_recurrence_plot_12_bins,
+                        "cross_recurrence_plot": cross_recurrence_plot_12_bins.astype(np.bool_),
                         # "score_matrix": score_matrix_12_bins,
                         "distance": distance_12_bins,
                         "extraction_time_crp": extraction_time_crp_12_bins,
@@ -111,7 +112,7 @@ class Qmax:
                         "cover_song_hpcp_features": cover_song_data_dataset["hpcp_features"],
                         "cover_song_second_hand_song_API_features": cover_song_data_dataset["second_hand_song_API_features"],
                         "cover_track_id": cover_song_data_dataset["track_id"],
-                        "cross_recurrence_plot": cross_recurrence_plot_36_bins,
+                        "cross_recurrence_plot": cross_recurrence_plot_36_bins.astype(np.bool_),
                         # "score_matrix": score_matrix_36_bins,
                         "distance": distance_36_bins,
                         "extraction_time_crp": extraction_time_crp_36_bins,
@@ -125,6 +126,16 @@ class Qmax:
             if i == 1:
                 total_cover_songs = j+1
                     
+        file_name = "Qmax_bis_12_bins.h5"
+        file_path = os.path.join(results_path, file_name)
+        if os.path.exists(file_path):
+            base_name, extension = os.path.splitext(file_name)
+            count = 1
+            while os.path.exists(os.path.join(results_path, f"{base_name}_{count}{extension}")):
+                count += 1
+            new_file_name = f"{base_name}_{count}{extension}"
+        else:
+            new_file_name = file_name
                     
         if confusion_matrix:
             confusion_matrix["parameters"] = {
@@ -143,7 +154,7 @@ class Qmax:
                         "total_original_songs": total_original_songs,
                         "total_cover_songs": total_cover_songs,
                     }
-            dd.io.save(results_path+"/Qmax.h5", confusion_matrix)
+            dd.io.save(os.path.join(results_path,new_file_name), confusion_matrix)
         if confusion_matrix_12_bins:
             confusion_matrix_12_bins["parameters"] = {
                         "binarize_percentile": self.binarize_percentile,
@@ -161,7 +172,8 @@ class Qmax:
                         "total_original_songs": total_original_songs,
                         "total_cover_songs": total_cover_songs,
                     }
-            dd.io.save(results_path+"/Qmax_12_bins.h5", confusion_matrix_12_bins)
+            print(os.path.join(results_path,new_file_name))
+            dd.io.save(os.path.join(results_path,new_file_name), confusion_matrix_12_bins)
         """if confusion_matrix_36_bins:
             confusion_matrix_36_bins["parameters"] = {
                         "binarize_percentile": self.binarize_percentile,
@@ -179,7 +191,7 @@ class Qmax:
                         "total_original_songs": total_original_songs,
                         "total_cover_songs": total_cover_songs,
                     }
-            dd.io.save(results_path+"/Qmax_36_bins.h5", confusion_matrix_36_bins)"""
+            dd.io.save(os.path.join(results_path,new_file_name), confusion_matrix_36_bins)"""
         
     def compute_chroma_cross_similarity(self, original_song_hpcp, cover_song_hpcp, binarize_percentile, frame_stack_size, frame_stackStride, noti, oti, otiBinary, streaming):
         crp = estd.ChromaCrossSimilarity(binarizePercentile=binarize_percentile,

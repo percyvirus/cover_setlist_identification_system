@@ -5,6 +5,7 @@ from essentia.pytools.spectral import hpcpgram
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 # Loading metadata files (json files)
 # Benchmark metadata
@@ -32,8 +33,12 @@ print(P_7581_data)
 file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/Da-TACOS/da-tacos_benchmark_subset_hpcp/W_7581_hpcp/P_86643_hpcp.h5'
 P_86643_data = dd.io.load(file_path)
 
+frame_size = 16000 * 0.1
+frame_size = int(2 ** math.ceil(math.log2(frame_size)))
+hop_size=int(frame_size/2)
+
 # Features extracted manually
-file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/PRUEBAS_RES1_extended/W_2111/P_2110.h5'
+file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/COVERS80_extended/W_26/P_26.h5'
 propio_1 = dd.io.load(file_path)
 #print(type(propio_1))
 print(propio_1['audio_features']['audio_file'])
