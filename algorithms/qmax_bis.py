@@ -18,7 +18,7 @@ class Qmax_bis:
         self.oti = True
         self.otiBinary = None
         self.streaming = False
-        self.alignment_type = 'chen17'
+        self.alignment_type = 'serra09'
         self.dis_extension = 0.5
         self.dis_onset = 0.5
         self.distance_type = 'asymmetric'
@@ -36,8 +36,8 @@ class Qmax_bis:
             print(f"Work ID ({i}): {label_id}")
             total_original_songs = total_original_songs + 1
             for j, (cover_song_track_id, cover_song_data_dataset) in enumerate(dataset.iterate_cover_songs_data()):
-                if cover_song_track_id == "P_ID_not_found":
-                    cover_song_track_id = "P_ID_not_found_"+cover_song_data_dataset['label']
+                if cover_song_track_id == "P_performance_ID_not_found":
+                    cover_song_track_id = "P_performance_ID_not_found_"+cover_song_data_dataset['label']
                 print(f"Performance ID ({j}): {cover_song_track_id}")
                 if "hpcp" in original_song_data_dataset:    # dataset with only hpcp_12_bins or hpcp_36_bins
                     original_song_hpcp = original_song_data_dataset["hpcp"]
@@ -56,7 +56,7 @@ class Qmax_bis:
                     confusion_matrix[key] = {
                         "original_song_data": original_song_data_dataset,
                         "cover_song_data": cover_song_data_dataset,
-                        "cross_recurrence": cross_recurrence_plot.astype(np.bool_),
+                        # "cross_recurrence": cross_recurrence_plot.astype(np.bool_),
                         # "score_matrix": score_matrix,
                         "distance": distance,
                         "extraction_time_crp": extraction_time_crp,
@@ -84,8 +84,10 @@ class Qmax_bis:
                     _, distance_12_bins, extraction_time_css_12_bins = self.compute_cover_song_similarity_distance(self.dis_onset, self.dis_extension, self.alignment_type, self.distance_type, cross_recurrence_plot_12_bins)
                     # _, distance_36_bins, extraction_time_css_36_bins = self.compute_cover_song_similarity_distance(self.dis_onset, self.dis_extension, self.alignment_type, self.distance_type, cross_recurrence_plot_36_bins)
                     # Check if the actual cover is a true cover of original song
+                    print(f"Distance: {distance_12_bins}")
             
                     key = (label_id, cover_song_track_id)
+                    print(f"Key: {key}")
                     
                     confusion_matrix_12_bins[key] = {
                         "original_song_audio_features": original_song_data_dataset["audio_features"],
@@ -96,7 +98,7 @@ class Qmax_bis:
                         "cover_song_hpcp_features": cover_song_data_dataset["hpcp_features"],
                         "cover_song_second_hand_song_API_features": cover_song_data_dataset["second_hand_song_API_features"],
                         "cover_track_id": cover_song_data_dataset["track_id"],
-                        "cross_recurrence_plot": cross_recurrence_plot_12_bins.astype(np.bool_),
+                        # "cross_recurrence_plot": cross_recurrence_plot_12_bins.astype(np.bool_),
                         # "score_matrix": score_matrix_12_bins,
                         "distance": distance_12_bins,
                         "extraction_time_crp": extraction_time_crp_12_bins,
@@ -112,7 +114,7 @@ class Qmax_bis:
                         "cover_song_hpcp_features": cover_song_data_dataset["hpcp_features"],
                         "cover_song_second_hand_song_API_features": cover_song_data_dataset["second_hand_song_API_features"],
                         "cover_track_id": cover_song_data_dataset["track_id"],
-                        "cross_recurrence_plot": cross_recurrence_plot_36_bins.astype(np.bool_),
+                        # "cross_recurrence_plot": cross_recurrence_plot_36_bins.astype(np.bool_),
                         # "score_matrix": score_matrix_36_bins,
                         "distance": distance_36_bins,
                         "extraction_time_crp": extraction_time_crp_36_bins,

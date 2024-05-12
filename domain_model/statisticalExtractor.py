@@ -3,6 +3,7 @@ import json
 import deepdish as dd
 import numpy as np
 from itertools import islice
+import matplotlib.pyplot as plt
 
 class StatisticalExtractor:
     def __init__(self):
@@ -20,8 +21,43 @@ class StatisticalExtractor:
             top1 = self.calculate_top1(confusion_matrix, work_IDs, performances_IDs)    # DONE
             top10 = self.calculate_topk(confusion_matrix, work_IDs, performances_IDs, 10)   # DONE
             mean_extraction_time_crp_covers, mean_extraction_time_crp_no_covers, mean_extraction_time_css_covers, mean_extraction_time_css_no_covers = self.calculate_extraction_times(confusion_matrix, work_IDs, performances_IDs)    # DONE
+            positions, distances, tuples = self.get_positions_distances_tuples(confusion_matrix, work_IDs, performances_IDs) # TODO
             parameters = confusion_matrix['parameters']
             dataset_info = confusion_matrix['dataset_info']
+            
+            array_positions = np.array(positions)
+            array_distances = np.array(distances)
+            array_tuples = np.array(tuples)
+            
+            array_positions_distances_tuples = np.empty((len(positions), 4), dtype='object')
+            array_positions_distances_tuples[:, 0] = array_positions
+            array_positions_distances_tuples[:, 1] = array_distances
+            array_positions_distances_tuples[:, 2] = array_tuples[:, 0]
+            array_positions_distances_tuples[:, 3] = array_tuples[:, 1]
+            
+            name, _ = os.path.splitext(os.path.basename(confusion_matrix_path))
+            
+            plt.figure(figsize=(16, 9))
+            bins = np.arange(85 + 1) - 0.5    
+            values, _, bars = plt.hist(positions, bins=bins, color='skyblue', edgecolor='black')
+            
+            for value, bar in zip(values, bars):
+                if value != 0:
+                    plt.text(bar.get_x() + bar.get_width() / 2, value + 1, str(int(value)), ha='center', fontsize=11)
+
+
+            plt.xlabel('Position', fontsize=15)
+            plt.ylabel('Frequency', fontsize=15)
+            plt.title(f"{name} Histograma", fontsize=15)
+            #plt.bar_label(bars, fontsize=10, color='navy')
+            plt.xticks(range(0, 85, 5), fontsize=13)
+            plt.yticks(range(0, 50, 5), fontsize=13)
+            plt.xlim([0.5, 83.5])
+            plt.grid(True)
+
+            plt.show(block=False)
+            
+            plt.savefig(f"{confusion_matrix_path.replace('.h5', '')}_histogram.png")
             
             results = {
                 "dataset_info": dataset_info,
@@ -35,7 +71,12 @@ class StatisticalExtractor:
                 "mean_extraction_time_crp_no_covers": mean_extraction_time_crp_no_covers,
                 "mean_extraction_time_css_covers": mean_extraction_time_css_covers,
                 "mean_extraction_time_css_no_covers": mean_extraction_time_css_no_covers,
-                "Qmax_parameters": parameters
+                "Qmax_parameters": parameters,
+                "Ranking":{
+                    "Positions": positions,
+                    "Distances": distances,
+                    "Tuples": tuples
+                }
             }
             
             file_path = f"{confusion_matrix_path.replace('.h5', '')}_results.json"
@@ -44,6 +85,10 @@ class StatisticalExtractor:
                 json.dump(results, json_file, indent=4)
 
             print("Results saved at", file_path)
+            
+            print("Press enter to continue...")
+            input()
+            plt.close('all')
             
         except FileNotFoundError:
             print("File not found. Please check the file path.")
@@ -83,7 +128,6 @@ class StatisticalExtractor:
             distance_list = ()
             boolens_list = ()
             for performances_ID in performances_IDs:
-                print(performances_ID)
                 pair_of_songs = confusion_matrix[(work_ID, performances_ID)]
                 tuples_list += ((work_ID, performances_ID),)
                 distance_list += (pair_of_songs['distance'],)
@@ -92,6 +136,7 @@ class StatisticalExtractor:
             combined_list = list(zip(distance_list, tuples_list, boolens_list))
             combined_list.sort()
             sorted_distance_list, sorted_tuples_list, sorted_boolens_list = zip(*combined_list)
+            
             rank = [i + 1 for i, valor in enumerate(sorted_boolens_list) if valor]
             rank = sum(rank) / len(rank) if rank else 0
             ranks = ranks + (rank,)
@@ -264,6 +309,40 @@ class StatisticalExtractor:
         
         return mean_extraction_time_crp_covers, mean_extraction_time_crp_no_covers, mean_extraction_time_css_covers, mean_extraction_time_css_no_covers
     
+    def get_positions_distances_tuples(self, confusion_matrix, work_IDs, performances_IDs):
+        ranks = ()
+        positions = []
+        distances = []
+        tuples = []
+        for work_ID in work_IDs:
+            tuples_list = ()
+            distance_list = ()
+            boolens_list = ()
+            for performances_ID in performances_IDs:
+                pair_of_songs = confusion_matrix[(work_ID, performances_ID)]
+                tuples_list += ((work_ID, performances_ID),)
+                distance_list += (pair_of_songs['distance'],)
+                boolens_list += (pair_of_songs['is_cover'],)
+        
+            combined_list = list(zip(distance_list, tuples_list, boolens_list))
+            combined_list.sort()
+            sorted_distance_list, sorted_tuples_list, sorted_boolens_list = zip(*combined_list)
+            
+            true_cover_indices = [i for i, boolean in enumerate(sorted_boolens_list) if boolean]
+            
+            true_cover_distances = [sorted_distance_list[i] for i in true_cover_indices]
+            true_cover_tuples = [sorted_tuples_list[i] for i in true_cover_indices]
+            
+            for num in true_cover_indices:
+                positions.append(num + 1)
+            for dist in true_cover_distances:
+                distances.append(dist)
+            for tuple in true_cover_tuples:
+                tuples.append(tuple)
+        
+        
+        
+        return positions, distances, tuples
     
     def sort_results(self, confusion_matrix, work_IDs, performances_IDs):
         for work_ID in work_IDs:
@@ -281,4 +360,6 @@ class StatisticalExtractor:
             combined_list = list(zip(distance_list, tuples_list, boolens_list))
             combined_list.sort()
             sorted_distance_list, sorted_tuples_list, sorted_boolens_list = zip(*combined_list)
-            return sorted_distance_list, sorted_tuples_list, sorted_boolens_list 
+            return sorted_distance_list, sorted_tuples_list, sorted_boolens_list
+
+    

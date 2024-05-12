@@ -38,8 +38,15 @@ frame_size = int(2 ** math.ceil(math.log2(frame_size)))
 hop_size=int(frame_size/2)
 
 # Features extracted manually
-file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/COVERS80_extended/W_26/P_26.h5'
+file_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/COVERS80_extended_bis/RESULTS/Qmax_bis_12_bins_1.h5'
 propio_1 = dd.io.load(file_path)
+
+file_path = f"{file_path.replace('.h5', '')}.json"
+            
+#with open(file_path, "w") as json_file:
+    #json.dump(propio_1, json_file, indent=4)
+
+    #print("Results saved at", file_path)
 #print(type(propio_1))
 print(propio_1['audio_features']['audio_file'])
 #print(type(propio_1['label']))

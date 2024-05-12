@@ -19,7 +19,7 @@ class Qmax:
         self.otiBinary = None
         self.streaming = False
         self.alignment_type = 'serra09'
-        self.dis_extension = 0.5
+        self.dis_extension = 0.7
         self.dis_onset = 0.5
         self.distance_type = 'asymmetric'
 

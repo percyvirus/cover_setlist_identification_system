@@ -10,7 +10,7 @@ class SecondHandSongsAPI:
         url = f"{self.base_url}/search/performance"
         parameters = {"title": title, "performer": performer, "format": "json"}
         
-        wait_time = 10  # Tiempo de espera en segundos entre intentos
+        wait_time = 8  # Tiempo de espera en segundos entre intentos
         
         while True:
             try:
@@ -29,7 +29,7 @@ class SecondHandSongsAPI:
             print(f"Waiting for {wait_time} seconds before retrying...")
             time.sleep(wait_time)
 
-    def search_artist(performer):
+    def search_artist(self, performer):
         url = "https://secondhandsongs.com/search/artist"
         parameters = {"commonName": performer, "format": "json"}
         
@@ -46,7 +46,7 @@ class SecondHandSongsAPI:
             print("Error when making the request::", err)
         return None
 
-    def search_work(title):
+    def search_work(self, title):
         url = "https://secondhandsongs.com/search/work"
         parameters = {"title": title, "format": "json"}
         
@@ -67,25 +67,3 @@ class SecondHandSongsAPI:
         parsed_url = urlparse(url)
         path_parts = parsed_url.path.split('/')
         return path_parts[-1]
-
-# Example
-
-if __name__ == "__main__":
-    api = SecondHandSongsAPI()
-    results = api.search_performance("Blackbird", "Beatles")
-    print(results)
-
-    if results:
-        total_results = results.get("totalResults", 0)
-        print("Total performances found:", total_results)
-        
-        result_page = results.get("resultPage", [])
-        for performance in result_page:
-            print("Title:", performance.get("title"))
-            print("Interprete:", performance.get("performer", {}).get("name"))
-            print("URL:", performance.get("uri"))
-            print("Is original:", performance.get("isOriginal"))
-            print("ID:", api.extract_id(performance.get("uri")))
-            print("-----")
-    else:
-        print("No se encontraron performancees para el título '{}' interpretado por '{}'".format("Blackbird", "Beatles"))

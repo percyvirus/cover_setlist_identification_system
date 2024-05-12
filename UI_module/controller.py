@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import json
+import deepdish as dd
 
 from UI_module.UI import UI
 from algorithms import *
@@ -78,7 +79,19 @@ class Controller:
             dataset_name_HPCP_extended = f"{dataset_name}_extended"
             
             self.datasetCreator = DatasetCreator(self, feature_extractor_type)
-            dataset_hpcp_12_bins, dataset_hpcp_36_bins, dataset_hpcp_extended = self.datasetCreator.create_dataset(list_original_songs)
+            dataset_hpcp_12_bins, dataset_hpcp_36_bins, dataset_hpcp_extended, failed_original_performances_list, failed_cover_performances_list, original_performances_that_are_not_original_performance_list, cover_performances_that_are_not_cover_performance_list = self.datasetCreator.create_dataset(list_original_songs)
+            
+            dd.io.save(f"{dataset_name}_dataset.h5", {
+                'dataset_hpcp_12_bins': dataset_hpcp_12_bins,
+                'dataset_hpcp_36_bins': dataset_hpcp_36_bins,
+                'dataset_hpcp_extended': dataset_hpcp_extended,
+                'failed_original_performances_list': failed_original_performances_list,
+                'failed_cover_performances_list': failed_cover_performances_list,
+                'original_performances_that_are_not_original_performance_list': original_performances_that_are_not_original_performance_list,
+                'cover_performances_that_are_not_cover_performance_list': cover_performances_that_are_not_cover_performance_list
+            })
+            
+            print(f"Backup saved at: {dataset_name}_dataset.h5")
             
             self.datasets[dataset_name_HPCP_12_bins] = dataset_hpcp_12_bins
             self.datasets[dataset_name_HPCP_36_bins] = dataset_hpcp_36_bins

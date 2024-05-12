@@ -18,7 +18,7 @@ class HPCPExtractor(FeatureExtractor):
         # Implement feature extraction logic here
         pass  # Placeholder, replace with actual implementation
     
-    def extract_HPCPs(self, song, resample_quality):
+    def extract_HPCPs(self, song_path, resample_quality):
         
         # Load query audio with AudioLoader algorithm, it returns:
         # · [0] audio (vector_stereosample) - the input audio signal
@@ -27,7 +27,7 @@ class HPCPExtractor(FeatureExtractor):
         # · [3] md5 (string) - the MD5 checksum of raw undecoded audio payload
         # · [4] bit_rate (integer) - the bit rate of the input audio, as reported by the decoder codec
         # · [5] codec (string) - the codec that is used to decode the input audio
-        song_audio_features = estd.AudioLoader(filename = song)()
+        song_audio_features = estd.AudioLoader(filename = song_path)()
         
         sample_rate = song_audio_features[1]
         number_channels = song_audio_features[2]
@@ -37,13 +37,13 @@ class HPCPExtractor(FeatureExtractor):
         
         # Load song with MonoLoader algorithm, it returns:
         # · [0] audio (vector_real) - the audio signal
-        song_audio = estd.MonoLoader(filename = song, resampleQuality = resample_quality, sampleRate = song_audio_features[1])()
+        song_audio = estd.MonoLoader(filename = song_path, resampleQuality = resample_quality, sampleRate = song_audio_features[1])()
 
         frame_size = sample_rate * 0.1
         frame_size = int(2 ** math.ceil(math.log2(frame_size)))
-        hop_size=int(frame_size/2)
-        min_frequency=50
-        max_frequency=5000
+        hop_size = int(frame_size/2)
+        min_frequency = 20
+        max_frequency = 20000
         
         # Extracting HPCP features from audio loaded with AudioLoader algorithm
         start_time_12_bins = time.time()
