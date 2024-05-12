@@ -1,6 +1,6 @@
 # cover_setlist_identification_system
 
-This project has been developed by Percy W Bonett Mendoza in the frame of the RES1 course project. Spring 2023-24. Masters MATT,
+This project is being developed by Percy W Bonett Mendoza in the frame of the RES1 course project. Spring 2023-24. Masters MATT,
 Barcelona School of Telecommunication Engineering (ETSETB), UPCs. 
 
 **Comments**:
