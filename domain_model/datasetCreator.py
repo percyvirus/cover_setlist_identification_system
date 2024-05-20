@@ -331,7 +331,7 @@ class DatasetCreator():
                     work_ID = "work_ID_not_found"
                     work_url = "work_URL_not_found"
             
-            return performance_title, performer, performer_url, performance_url, True, performance_ID, work_ID, work_url
+            return performance_title, performer, performer_url, performance_url, False, performance_ID, work_ID, work_url
             #return performance_title, performer, performer_url, performance_url, is_original, performance_ID, '158069', 'https://secondhandsongs.com/work/158069'
         else:
             print("No performances were found for the title '{}' performed by '{}'".format(performance_name, artist_name))

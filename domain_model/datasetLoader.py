@@ -19,7 +19,10 @@ class DatasetLoader:
                     song_files = [item for item in song_files if item.endswith('.h5')] # To avoid '.DS_Store'
                     for song_file in song_files:
                         song_data = dd.io.load(os.path.join(original_song_folder, song_file))
-                        self.dataset.add_data(song_data["track_id"], song_data)
+                        if song_data["track_id"] == 'P_performance_ID_not_found':
+                            self.dataset.add_data(song_data["track_id"] + '_' + song_data["label"], song_data)
+                        else:
+                            self.dataset.add_data(song_data["track_id"], song_data)
             self.controller.datasets[folder_name] = self.dataset
             print(f"\nDataset {folder_name} loaded")
         except FileNotFoundError:

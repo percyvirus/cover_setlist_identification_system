@@ -124,7 +124,7 @@ class UI:
                 print(choice)
             print()
             print("Press enter to continue...")
-            self.controller.execute_qmax(dataset, True, results_path)
+            self.controller.execute_qmax(dataset, results_path)
         elif self.menu_options[user_input] == "Execute Qmax*":
             keys = list(self.datasets.keys())
             self.datasets_options = {str(i+1): clave for i, clave in enumerate(keys)}
@@ -132,16 +132,19 @@ class UI:
             for number, option in self.datasets_options.items():
                 print(f"{number}. {option}")
             user_input = self.get_user_input("Enter your choice: ")
+            
             dataset_name = self.datasets_options[user_input]
             dataset = self.datasets[dataset_name]
+            
             results_path = self.get_user_input("Enter path where to save results: ")
             self.user_choices[len(self.user_choices)] = f"  - Results path: ({results_path})"
+            
             self.display_message("User choises/inputs:")
             for number, choice in self.user_choices.items():
                 print(choice)
             print()
             print("Press enter to continue...")
-            self.controller.execute_qmax_bis(dataset, False, results_path)
+            self.controller.execute_qmax_bis(dataset, results_path)
         elif self.menu_options[user_input] == "Execute EarlyFusion":
             print()
         elif self.menu_options[user_input] == "Execute LateFusion":

@@ -1,5 +1,6 @@
 import os
 import json
+import ujson
 import deepdish as dd
 import numpy as np
 from itertools import islice
@@ -38,7 +39,7 @@ class StatisticalExtractor:
             name, _ = os.path.splitext(os.path.basename(confusion_matrix_path))
             
             plt.figure(figsize=(16, 9))
-            bins = np.arange(85 + 1) - 0.5    
+            bins = np.arange(len(performances_IDs) + 1) - 0.5    
             values, _, bars = plt.hist(positions, bins=bins, color='skyblue', edgecolor='black')
             
             for value, bar in zip(values, bars):
@@ -50,15 +51,22 @@ class StatisticalExtractor:
             plt.ylabel('Frequency', fontsize=15)
             plt.title(f"{name} Histograma", fontsize=15)
             #plt.bar_label(bars, fontsize=10, color='navy')
-            plt.xticks(range(0, 85, 5), fontsize=13)
+            plt.xticks(range(0, len(performances_IDs)+2, 5), fontsize=13)
             plt.yticks(range(0, 50, 5), fontsize=13)
-            plt.xlim([0.5, 83.5])
+            plt.xlim([0.5, len(performances_IDs)+0.5])
             plt.grid(True)
 
             plt.show(block=False)
             
             plt.savefig(f"{confusion_matrix_path.replace('.h5', '')}_histogram.png")
+            plt.close()
             
+            ranking = {}
+            for i in range(len(tuples)):
+                key = tuples[i]
+                value = {'position': positions[i], 'distance': distances[i]}
+                ranking[key] = value
+                
             results = {
                 "dataset_info": dataset_info,
                 "MR": mean_rank,
@@ -72,17 +80,13 @@ class StatisticalExtractor:
                 "mean_extraction_time_css_covers": mean_extraction_time_css_covers,
                 "mean_extraction_time_css_no_covers": mean_extraction_time_css_no_covers,
                 "Qmax_parameters": parameters,
-                "Ranking":{
-                    "Positions": positions,
-                    "Distances": distances,
-                    "Tuples": tuples
-                }
+                "Rankings": ranking
             }
             
             file_path = f"{confusion_matrix_path.replace('.h5', '')}_results.json"
             
-            with open(file_path, "w") as json_file:
-                json.dump(results, json_file, indent=4)
+            with open(file_path, 'w') as file:
+               file.write(ujson.dumps(results, indent=4))
 
             print("Results saved at", file_path)
             
@@ -169,6 +173,7 @@ class StatisticalExtractor:
 
     def calculate_map(self, confusion_matrix, work_IDs, performances_IDs):
         average_precisions = ()
+        
         for work_ID in work_IDs:
             Tp = 0
             Fp = 0

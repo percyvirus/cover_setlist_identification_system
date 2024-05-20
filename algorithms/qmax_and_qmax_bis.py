@@ -8,54 +8,67 @@ import numpy as np
 import deepdish as dd
 
 
-class Qmax_bis:
-    def __init__(self):
+class Qmax_and_Qmax_bis:
+    def __init__(self, oti_binary):
         self.binarize_percentile = 0.095
         self.frame_stack_size = 9
-        self.frame_stackStride = 1
-        self.noti_12_bins  = 12
-        self.noti_36_bins  = 36
+        self.frame_stack_stride = 1
+        self.noti_12_bins = 12
+        self.noti_36_bins = 36
         self.oti = True
-        self.otiBinary = None
+        self.oti_binary = oti_binary
         self.streaming = False
-        self.alignment_type = 'serra09'
-        self.dis_extension = 0.5
+        
         self.dis_onset = 0.5
+        self.dis_extension = 0.5
+        self.alignment_type = 'serra09'
         self.distance_type = 'asymmetric'
+        
+        self.filter = 'compress_expand'
+        
+        self.chromaCrossSimilarity = estd.ChromaCrossSimilarity(binarizePercentile = self.binarize_percentile,
+                                        frameStackSize = self.frame_stack_size,
+                                        frameStackStride = self.frame_stack_stride,
+                                        noti = self.noti_12_bins,
+                                        oti = self.oti,
+                                        otiBinary = self.oti_binary,
+                                        streaming = self.streaming)
+        
+        self.coverSongSimilarity = estd.CoverSongSimilarity(disOnset = self.dis_onset,
+                                                  disExtension = self.dis_extension,
+                                                  alignmentType = self.alignment_type,
+                                                  distanceType = self.distance_type)
+        
 
-    def execute_qmax_bis(self, dataset, otiBinary, results_path):
-        self.otiBinary = otiBinary  # Set Qmax or Qmax*
+    def execute_qmax_bis(self, dataset, results_path):
         confusion_matrix = {}
         confusion_matrix_12_bins = {}
         # confusion_matrix_36_bins = {}
         total_original_songs = 0
         total_cover_songs = 0
         
-        for i, (label_id, original_song_track_id, original_song_data_dataset) in enumerate(dataset.iterate_original_songs_data()):
+        for i, (label_id, original_performance_track_id, original_song_data_dataset) in enumerate(dataset.iterate_original_songs_data()):
             # print(f"Work ID ({i}): {label_id} ({original_song_data_dataset['audio_features']['audio_file']})")
-            print(f"Work ID ({i}): {label_id}")
+            print(f"{label_id} ({i}): Original performance {original_performance_track_id}")
             total_original_songs = total_original_songs + 1
             for j, (cover_song_track_id, cover_song_data_dataset) in enumerate(dataset.iterate_cover_songs_data()):
-                if cover_song_track_id == "P_performance_ID_not_found":
-                    cover_song_track_id = "P_performance_ID_not_found_"+cover_song_data_dataset['label']
-                print(f"Performance ID ({j}): {cover_song_track_id}")
+                """if cover_song_track_id == "P_performance_ID_not_found":
+                    cover_song_track_id = "P_performance_ID_not_found_"+cover_song_data_dataset['label']"""
+                print(f"Cover performance ID ({j}): {cover_song_track_id}")
                 if "hpcp" in original_song_data_dataset:    # dataset with only hpcp_12_bins or hpcp_36_bins
-                    original_song_hpcp = original_song_data_dataset["hpcp"]
-                    cover_song_hpcp = cover_song_data_dataset["hpcp"]
+                    original_song_hpcp = self.filter_HPCP(original_song_data_dataset["hpcp"])
+                    cover_song_hpcp = self.filter_HPCP(cover_song_data_dataset["hpcp"])
                     
                     # Compute Chroma Cross Similarity
-                    cross_recurrence_plot, extraction_time_crp = self.compute_chroma_cross_similarity(original_song_hpcp, cover_song_hpcp,
-                                                                                                      self.binarize_percentile, self.frame_stack_size,
-                                                                                                      self.frame_stackStride, self.noti_12_bins,
-                                                                                                      self.oti, self.otiBinary, self.streaming)
+                    cross_recurrence_plot, extraction_time_crp = self.compute_chroma_cross_similarity(original_song_hpcp, cover_song_hpcp)
                     # Compute Cover Song Similarity Distance
-                    _, distance, extraction_time_css = self.compute_cover_song_similarity_distance(self.dis_onset, self.dis_extension, self.alignment_type, self.distance_type, cross_recurrence_plot)
+                    _, distance, extraction_time_css = self.compute_cover_song_similarity_distance(cross_recurrence_plot)
                     
                     key = (label_id, cover_song_track_id)
                     
                     confusion_matrix[key] = {
-                        "original_song_data": original_song_data_dataset,
-                        "cover_song_data": cover_song_data_dataset,
+                        "original_performance_data": original_song_data_dataset,
+                        "cover_performance_data": cover_song_data_dataset,
                         # "cross_recurrence": cross_recurrence_plot.astype(np.bool_),
                         # "score_matrix": score_matrix,
                         "distance": distance,
@@ -65,39 +78,33 @@ class Qmax_bis:
                     }
                     
                 elif "hpcp_12_bins" in original_song_data_dataset and "hpcp_36_bins" in original_song_data_dataset:
-                    original_song_hpcp_12_bins = original_song_data_dataset["hpcp_12_bins"]
+                    original_song_hpcp_12_bins = self.filter_HPCP(original_song_data_dataset["hpcp_12_bins"])
                     # original_song_hpcp_36_bins = original_song_data_dataset["hpcp_36_bins"]
-                    cover_song_hpcp_12_bins = cover_song_data_dataset["hpcp_12_bins"]
+                    cover_song_hpcp_12_bins = self.filter_HPCP(cover_song_data_dataset["hpcp_12_bins"])
                     # cover_song_hpcp_36_bins = cover_song_data_dataset["hpcp_36_bins"]
                     
                     # Compute Chroma Cross Similarity
-                    cross_recurrence_plot_12_bins, extraction_time_crp_12_bins = self.compute_chroma_cross_similarity(original_song_hpcp_12_bins, cover_song_hpcp_12_bins,
-                                                                                                                      self.binarize_percentile, self.frame_stack_size,
-                                                                                                                      self.frame_stackStride, self.noti_12_bins,
-                                                                                                                      self.oti, self.otiBinary, self.streaming)
-                    """cross_recurrence_plot_36_bins, extraction_time_crp_36_bins = self.compute_chroma_cross_similarity(original_song_hpcp_36_bins, cover_song_hpcp_36_bins,
-                                                                                                                      self.binarize_percentile, self.frame_stack_size,
-                                                                                                                      self.frame_stackStride, self.noti_36_bins,
-                                                                                                                      self.oti, self.otiBinary, self.streaming)"""
+                    cross_recurrence_plot_12_bins, extraction_time_crp_12_bins = self.compute_chroma_cross_similarity(original_song_hpcp_12_bins, cover_song_hpcp_12_bins)
+                    """cross_recurrence_plot_36_bins, extraction_time_crp_36_bins = self.compute_chroma_cross_similarity(original_song_hpcp_36_bins, cover_song_hpcp_36_bins)"""
                     
                     # Compute Cover Song Similarity Distance
-                    _, distance_12_bins, extraction_time_css_12_bins = self.compute_cover_song_similarity_distance(self.dis_onset, self.dis_extension, self.alignment_type, self.distance_type, cross_recurrence_plot_12_bins)
-                    # _, distance_36_bins, extraction_time_css_36_bins = self.compute_cover_song_similarity_distance(self.dis_onset, self.dis_extension, self.alignment_type, self.distance_type, cross_recurrence_plot_36_bins)
+                    _, distance_12_bins, extraction_time_css_12_bins = self.compute_cover_song_similarity_distance(cross_recurrence_plot_12_bins)
+                    # _, distance_36_bins, extraction_time_css_36_bins = self.compute_cover_song_similarity_distance(cross_recurrence_plot_36_bins)
                     # Check if the actual cover is a true cover of original song
-                    print(f"Distance: {distance_12_bins}")
-            
                     key = (label_id, cover_song_track_id)
-                    print(f"Key: {key}")
+                    print(f"{key} distance : {distance_12_bins}")
                     
                     confusion_matrix_12_bins[key] = {
-                        "original_song_audio_features": original_song_data_dataset["audio_features"],
-                        "original_song_hpcp_features": original_song_data_dataset["hpcp_features"],
-                        "original_song_second_hand_song_API_features": original_song_data_dataset["second_hand_song_API_features"],
-                        "original_track_id": original_song_data_dataset["track_id"],
-                        "cover_song_audio_features": cover_song_data_dataset["audio_features"],
-                        "cover_song_hpcp_features": cover_song_data_dataset["hpcp_features"],
-                        "cover_song_second_hand_song_API_features": cover_song_data_dataset["second_hand_song_API_features"],
-                        "cover_track_id": cover_song_data_dataset["track_id"],
+                        "original_song_data": original_song_data_dataset,
+                        "cover_song_data": cover_song_data_dataset,
+                        # "original_song_audio_features": original_song_data_dataset["audio_features"],
+                        # "original_song_hpcp_features": original_song_data_dataset["hpcp_features"],
+                        # "original_song_second_hand_song_API_features": original_song_data_dataset["second_hand_song_API_features"],
+                        # "original_track_id": original_song_data_dataset["track_id"],
+                        # "cover_song_audio_features": cover_song_data_dataset["audio_features"],
+                        # "cover_song_hpcp_features": cover_song_data_dataset["hpcp_features"],
+                        # "cover_song_second_hand_song_API_features": cover_song_data_dataset["second_hand_song_API_features"],
+                        # "cover_track_id": cover_song_data_dataset["track_id"],
                         # "cross_recurrence_plot": cross_recurrence_plot_12_bins.astype(np.bool_),
                         # "score_matrix": score_matrix_12_bins,
                         "distance": distance_12_bins,
@@ -143,10 +150,10 @@ class Qmax_bis:
             confusion_matrix["parameters"] = {
                         "binarize_percentile": self.binarize_percentile,
                         "frame_stack_size": self.frame_stack_size,
-                        "frame_stackStride": self.frame_stackStride,
+                        "frame_stackStride": self.frame_stack_stride,
                         "noti": self.noti_12_bins,
                         "oti": self.oti,
-                        "otiBinary": self.otiBinary,
+                        "otiBinary": self.oti_binary,
                         "alignment_type": self.alignment_type,
                         "dis_extension": self.dis_extension,
                         "dis_onset": self.dis_onset,
@@ -161,10 +168,10 @@ class Qmax_bis:
             confusion_matrix_12_bins["parameters"] = {
                         "binarize_percentile": self.binarize_percentile,
                         "frame_stack_size": self.frame_stack_size,
-                        "frame_stackStride": self.frame_stackStride,
+                        "frame_stackStride": self.frame_stack_stride,
                         "noti": self.noti_12_bins,
                         "oti": self.oti,
-                        "otiBinary": self.otiBinary,
+                        "otiBinary": self.oti_binary,
                         "alignment_type": self.alignment_type,
                         "dis_extension": self.dis_extension,
                         "dis_onset": self.dis_onset,
@@ -180,10 +187,10 @@ class Qmax_bis:
             confusion_matrix_36_bins["parameters"] = {
                         "binarize_percentile": self.binarize_percentile,
                         "frame_stack_size": self.frame_stack_size,
-                        "frame_stackStride": self.frame_stackStride,
+                        "frame_stackStride": self.frame_stack_stride,
                         "noti": self.noti_36_bins,
                         "oti": self.oti,
-                        "otiBinary": self.otiBinary,
+                        "otiBinary": self.oti_binary,
                         "alignment_type": self.alignment_type,
                         "dis_extension": self.dis_extension,
                         "dis_onset": self.dis_onset,
@@ -195,32 +202,57 @@ class Qmax_bis:
                     }
             dd.io.save(os.path.join(results_path,new_file_name), confusion_matrix_36_bins)"""
         
-    def compute_chroma_cross_similarity(self, original_song_hpcp, cover_song_hpcp, binarize_percentile, frame_stack_size, frame_stackStride, noti, oti, otiBinary, streaming):
-        crp = estd.ChromaCrossSimilarity(binarizePercentile=binarize_percentile,
-                                        frameStackSize=frame_stack_size,
-                                        frameStackStride=frame_stackStride,
-                                        noti=noti,
-                                        oti=oti,
-                                        otiBinary=otiBinary,
-                                        streaming=streaming)
+    def compute_chroma_cross_similarity(self, original_song_hpcp, cover_song_hpcp):
         
         start_time_crp = time.time()
-        chroma_cross_similarity = crp(original_song_hpcp, cover_song_hpcp)
+        chroma_cross_similarity = self.chromaCrossSimilarity(cover_song_hpcp, original_song_hpcp)
         end_time_crp = time.time()
         extraction_time_crp = end_time_crp - start_time_crp
         
         return chroma_cross_similarity, extraction_time_crp
     
-    def compute_cover_song_similarity_distance(self, dis_onset, dis_extension, alignment_type, distance_type, cross_recurrence_plot):
-        css = estd.CoverSongSimilarity(disOnset=dis_onset,
-                                        disExtension=dis_extension,
-                                        alignmentType=alignment_type,
-                                        distanceType=distance_type)
+    def compute_cover_song_similarity_distance(self, cross_recurrence_plot):
         
         start_time_css = time.time()
-        score_matrix, distance = css(cross_recurrence_plot)
+        score_matrix, distance = self.coverSongSimilarity(cross_recurrence_plot)
         end_time_css = time.time()
         extraction_time_css = end_time_css - start_time_css
         
         return score_matrix, distance, extraction_time_css
+    
+    def transform(self, x):
+        if 0 <= x <= 0.5:
+            return 2 * x**2
+        elif 0.5 < x <= 1:
+            return x
+        else:
+            raise ValueError("x must be in the interval [0, 1]")
+    
+    def filter_HPCP(self, HPCP_vectors, power=2):
+        if self.filter == None:
+            return HPCP_vectors
+        
+        if self.filter == 'smooth':
+            smoothed_HPCP_vectors = np.zeros_like(HPCP_vectors)
+            window_size = 3
+                
+            for i in range(len(HPCP_vectors)):
+                start_index = max(0, i - window_size // 2)
+                end_index = min(len(HPCP_vectors), i + window_size // 2 + 1)
+                smoothed_HPCP_vectors[i] = np.mean(HPCP_vectors[start_index:end_index], axis=0)
+            return smoothed_HPCP_vectors
+        if self.filter == 'power':
+            powered_HPCP_vectors = np.power(HPCP_vectors, power)
+
+            powered_HPCP_vectors = powered_HPCP_vectors / np.max(powered_HPCP_vectors)
+            return powered_HPCP_vectors
+        
+        if self.filter == 'compress_expand':
+            compress_expand_HPCP_vectors = np.zeros_like(HPCP_vectors)
+            vectorized_transform = np.vectorize(self.transform)
+            
+            for i in range(len(HPCP_vectors)):
+                compress_expand_HPCP_vectors[i] = vectorized_transform(HPCP_vectors[i])
+                
+            return compress_expand_HPCP_vectors
 

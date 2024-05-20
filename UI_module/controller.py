@@ -15,7 +15,7 @@ from domain_model.exiter import Exiter
 from domain_model.statisticalExtractor import StatisticalExtractor
 from domain_model.database import Database
 from algorithms.qmax import Qmax
-from algorithms.qmax_bis import Qmax_bis
+from algorithms.qmax_and_qmax_bis import Qmax_and_Qmax_bis
 # from UI_module.creator import Creator
 # from UI_module.loader_audio import Loader_audio
 # from UI_module.uploader_hpcp import Uploader_hpcp
@@ -65,8 +65,6 @@ class Controller:
             except:
                 print("An exception occurred")
             
-    def execute_Qmax(self, file_path):
-        pass
         
     def create_dataset(self, list_original_songs, feature_extractor_type, dataset_name):
         if feature_extractor_type == "HPCP":
@@ -118,13 +116,13 @@ class Controller:
     def save_datasets(self):    # TODO: IMPLEMENT
         self.datasetSaver.save_dataset("dataset_name", load_locally=True, load_from_mongodb=False)
         
-    def execute_qmax(self, dataset, otiBinary, results_path):    # TODO: IMPLEMENT
-        self.algorithm = Qmax()
-        self.algorithm.execute_qmax(dataset, otiBinary, results_path)
+    def execute_qmax(self, dataset, results_path):    # TODO: IMPLEMENT
+        self.algorithm = Qmax_and_Qmax_bis(True)
+        self.algorithm.execute_qmax_bis(dataset, results_path)
         
-    def execute_qmax_bis(self, dataset, otiBinary, results_path):    # TODO: IMPLEMENT
-        self.algorithm = Qmax_bis()
-        self.algorithm.execute_qmax_bis(dataset, otiBinary, results_path)
+    def execute_qmax_bis(self, dataset, results_path):    # TODO: IMPLEMENT
+        self.algorithm = Qmax_and_Qmax_bis(False)
+        self.algorithm.execute_qmax_bis(dataset, results_path)
         
     def get_statistics(self, confusion_matrix_path):    # TODO: IMPLEMENT
         self.statistical_extractor.calculate_metrics(confusion_matrix_path)
