@@ -19,8 +19,9 @@ class UI:
             "9": "Execute Qmax*",
             "10": "Execute EarlyFusion",
             "11": "Execute LateFusion",
-            "13": "Get Statistics",
-            "12": "Exit"
+            "12": "Get Statistics",
+            "13": "Exit",
+            "14": "Execute Qmax* with COVERS80"
         }
         self.user_choices = {
         }
@@ -154,6 +155,8 @@ class UI:
             self.controller.get_statistics(confusion_matrix_path)
         elif self.menu_options[user_input] == "Exit":
             self.controller.exit_program()
+        elif self.menu_options[user_input] == "Execute Qmax* with COVERS80":
+            self.controller.execute_Qmax_bis_with_COVERS80()
         else:
             self.display_error("Invalid option. Please choose a valid option.")
         return False  # Continue running

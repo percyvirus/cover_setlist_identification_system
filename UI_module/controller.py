@@ -131,6 +131,12 @@ class Controller:
         for dataset in self.datasets.items():
             self.datasetSaver.save_dataset(dataset, save_locally, save_to_mongodb)
     
+    def execute_Qmax_bis_with_COVERS80(self):
+        dataset_path = './DATASETS/CUVERS80_extended'
+        results_dataset_path = './DATASETS/CUVERS80_extended/RESULTS'
+        self.load_datasets(dataset_path)
+        self.execute_qmax_bis(self.datasets['CUVERS80_extended'], results_dataset_path)
+    
     def exit_program(self):
         self.running = False
         
