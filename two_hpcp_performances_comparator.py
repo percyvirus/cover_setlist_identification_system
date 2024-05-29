@@ -6,8 +6,8 @@ from essentia.pytools.spectral import hpcpgram
 import matplotlib.pyplot as plt
 import deepdish as dd
 
-performance_1_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/CUVERS80_extended/W_20905/P_20905.h5'
-performance_2_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/CUVERS80_extended/W_20905/P_20916.h5'
+performance_2_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/CUVERS80_extended/W_4728/P_4728.h5'
+performance_1_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/PROPIOS/CUVERS80_extended/W_4728/P_5966.h5'
 
 params_qmax_and_qmax_bis = {
     'binarize_percentile': 0.095,

@@ -24,7 +24,7 @@ class Qmax_and_Qmax_bis:
         self.alignment_type = 'serra09'
         self.distance_type = 'asymmetric'
         
-        self.filter = 'compress_expand'
+        self.filter = 'smooth'
         
         self.chromaCrossSimilarity = estd.ChromaCrossSimilarity(binarizePercentile = self.binarize_percentile,
                                         frameStackSize = self.frame_stack_size,
@@ -157,7 +157,8 @@ class Qmax_and_Qmax_bis:
                         "alignment_type": self.alignment_type,
                         "dis_extension": self.dis_extension,
                         "dis_onset": self.dis_onset,
-                        "distance_type": self.distance_type
+                        "distance_type": self.distance_type,
+                        "filter": self.filter
                     }
             confusion_matrix["dataset_info"] = {
                         "total_original_songs": total_original_songs,
@@ -175,7 +176,8 @@ class Qmax_and_Qmax_bis:
                         "alignment_type": self.alignment_type,
                         "dis_extension": self.dis_extension,
                         "dis_onset": self.dis_onset,
-                        "distance_type": self.distance_type
+                        "distance_type": self.distance_type,
+                        "filter": self.filter
                     }
             confusion_matrix_12_bins["dataset_info"] = {
                         "total_original_songs": total_original_songs,

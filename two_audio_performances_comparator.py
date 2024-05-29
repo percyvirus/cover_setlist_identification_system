@@ -5,8 +5,8 @@ from hpcp import HPCP
 from essentia.pytools.spectral import hpcpgram
 import matplotlib.pyplot as plt
 
-performance_1_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/COVERS80/coversongs/covers32k/Lodi/creedence_clearwater_revival+Live_in_Europe+08-Lodi.mp3'
-performance_2_path = '/Users/percywbm/Desktop/PERCY/MÀSTER/DATASETS/COVERS80/coversongs/covers32k/Lodi/tesla+Five_Man_Acoustic_Jam+09-Lodi.mp3'
+performance_1_path = '/Users/percywbm/Desktop/PERCY/SONGS/I_m_Not_In_Love/10cc+The_Very_Best_of_10cc+07-I_m_Not_In_Love.mp3'
+performance_2_path = '/Users/percywbm/Desktop/PERCY/SONGS/I_m_Not_In_Love/tori_amos+Strange_Little_Girls+05-I_m_Not_In_Love.mp3'
 
 resample_quality = 0
 num_bins = 12
