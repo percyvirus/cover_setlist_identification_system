@@ -25,6 +25,7 @@ class Qmax_and_Qmax_bis:
         self.distance_type = 'asymmetric'
         
         self.filter = 'smooth'
+        self.window_size = 2
         
         self.chromaCrossSimilarity = estd.ChromaCrossSimilarity(binarizePercentile = self.binarize_percentile,
                                         frameStackSize = self.frame_stack_size,
@@ -166,6 +167,11 @@ class Qmax_and_Qmax_bis:
                     }
             dd.io.save(os.path.join(results_path,new_file_name), confusion_matrix)
         if confusion_matrix_12_bins:
+            if self.filter == 'smooth':
+                filter = {
+                    "filter": self.filter,
+                    "window size": self.window_size
+                }
             confusion_matrix_12_bins["parameters"] = {
                         "binarize_percentile": self.binarize_percentile,
                         "frame_stack_size": self.frame_stack_size,
@@ -177,7 +183,7 @@ class Qmax_and_Qmax_bis:
                         "dis_extension": self.dis_extension,
                         "dis_onset": self.dis_onset,
                         "distance_type": self.distance_type,
-                        "filter": self.filter
+                        "filter": filter
                     }
             confusion_matrix_12_bins["dataset_info"] = {
                         "total_original_songs": total_original_songs,
@@ -236,7 +242,7 @@ class Qmax_and_Qmax_bis:
         
         if self.filter == 'smooth':
             smoothed_HPCP_vectors = np.zeros_like(HPCP_vectors)
-            window_size = 3
+            window_size = self.window_size
                 
             for i in range(len(HPCP_vectors)):
                 start_index = max(0, i - window_size // 2)
